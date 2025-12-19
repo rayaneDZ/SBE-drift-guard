@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sbedg"
+version = "0.1.0"
+description = "SBE Drift Guard – schema drift detection and C++ parser generation (1-day MVP)"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+  { name = "Mohammed Ramzi Bouthiba" }
+]
+
+dependencies = [
+  "jinja2>=3.1"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0"
+]
+
+[project.scripts]
+sbedg = "sbedg.cli:main"
+
+[tool.setuptools]
+packages = ["sbedg"]
+
+[tool.setuptools.package-data]
+sbedg = ["templates/*.j2"]

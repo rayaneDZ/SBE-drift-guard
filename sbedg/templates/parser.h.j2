@@ -1,0 +1,22 @@
+#pragma once
+#include <array>
+#include <cstddef>
+#include <cstdint>
+
+#ifndef {{ guard }}
+#define {{ guard }}
+
+struct {{ struct_name }} {
+{%- for f in fields %}
+  {{ f.cpp_type }} {{ f.name }};
+{%- endfor %}
+};
+
+/// Returns true on success, false if buffer too small.
+/// Parses little-endian encoded fields in schema order.
+bool {{ parser_fn }}(const uint8_t* buf, size_t len, {{ struct_name }}& out);
+
+/// Total bytes required for this message (fixed-size schema).
+constexpr size_t {{ struct_name|upper }}_WIRE_SIZE = {{ total_size }};
+
+#endif // {{ guard }}

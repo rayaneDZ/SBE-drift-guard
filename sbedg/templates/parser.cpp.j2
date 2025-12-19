@@ -1,0 +1,70 @@
+#include "{{ header_filename }}"
+#include <cstring>
+
+namespace {
+
+inline bool need(size_t pos, size_t len, size_t n) {
+  return pos + n <= len;
+}
+
+inline uint32_t read_u32_le(const uint8_t* p) {
+  return (uint32_t)p[0]
+       | ((uint32_t)p[1] << 8)
+       | ((uint32_t)p[2] << 16)
+       | ((uint32_t)p[3] << 24);
+}
+
+inline uint64_t read_u64_le(const uint8_t* p) {
+  return (uint64_t)p[0]
+       | ((uint64_t)p[1] << 8)
+       | ((uint64_t)p[2] << 16)
+       | ((uint64_t)p[3] << 24)
+       | ((uint64_t)p[4] << 32)
+       | ((uint64_t)p[5] << 40)
+       | ((uint64_t)p[6] << 48)
+       | ((uint64_t)p[7] << 56);
+}
+
+inline int64_t read_i64_le(const uint8_t* p) {
+  return (int64_t)read_u64_le(p);
+}
+
+} // namespace
+
+bool {{ parser_fn }}(const uint8_t* buf, size_t len, {{ struct_name }}& out) {
+  size_t pos = 0;
+  (void)len;  // silence -Wunused-parameter if generator emits no length checks
+
+  {%- for f in fields %}
+    // Field: {{ f.name }}
+    {%- if f.kind == "int" %}
+      {%- if f.cpp_type == "uint32_t" %}
+    if (!need(pos, len, 4)) return false;
+    out.{{ f.name }} = read_u32_le(buf + pos);
+    pos += 4;
+      {%- elif f.cpp_type == "uint64_t" %}
+    if (!need(pos, len, 8)) return false;
+    out.{{ f.name }} = read_u64_le(buf + pos);
+    pos += 8;
+      {%- elif f.cpp_type == "int64_t" %}
+    if (!need(pos, len, 8)) return false;
+    out.{{ f.name }} = read_i64_le(buf + pos);
+    pos += 8;
+      {%- else %}
+    // Unsupported integer type in template: {{ f.cpp_type }}
+    return false;
+      {%- endif %}
+    {%- elif f.kind == "char_array" %}
+    if (!need(pos, len, {{ f.n }})) return false;
+    // raw bytes (not necessarily null-terminated)
+    std::memcpy(out.{{ f.name }}.data(), buf + pos, {{ f.n }});
+    pos += {{ f.n }};
+    {%- else %}
+    // Unsupported field kind in template: {{ f.kind }}
+    return false;
+    {%- endif %}
+
+  {%- endfor %}
+
+  return true;
+}

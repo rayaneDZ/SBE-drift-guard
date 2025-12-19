@@ -1,0 +1,10 @@
+{
+  "message": "TradeUpdate",
+  "endianness": "little",
+  "fields": [
+    { "name": "ts", "type": "u64" },
+    { "name": "price", "type": "i64", "scale": 10000 },
+    { "name": "qty", "type": "u32" },
+    { "name": "symbol", "type": "char[8]" }
+  ]
+}

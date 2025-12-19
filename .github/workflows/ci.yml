@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pytest jinja2
+
+      - name: Run Python tests
+        run: |
+          pytest -q
+
+      - name: Build C++ (generated parser + tiny runner)
+        run: |
+          g++ --version
+          mkdir -p build
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror \
+            -Igenerated \
+            generated/trade_parser.cpp \
+            cpp/main.cpp \
+            -o build/parse_demo
+
+      - name: Run end-to-end roundtrip
+        run: |
+          python -m sbedg generate schemas/trade_v2.json --out generated/
+          python -m sbedg make-fixture schemas/trade_v2.json --out build/fixture.bin
+          ./build/parse_demo build/fixture.bin > build/out.json
+          python -m sbedg assert-json build/out.json schemas/trade_v2.json
+
