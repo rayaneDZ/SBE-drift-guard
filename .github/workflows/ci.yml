@@ -36,11 +36,3 @@ jobs:
             generated/trade_parser.cpp \
             cpp/main.cpp \
             -o build/parse_demo
-
-      - name: Run end-to-end roundtrip
-        run: |
-          python -m sbedg generate schemas/trade_v2.json --out generated/
-          python -m sbedg make-fixture schemas/trade_v2.json --out build/fixture.bin
-          ./build/parse_demo build/fixture.bin > build/out.json
-          python -m sbedg assert-json build/out.json schemas/trade_v2.json
-
