@@ -1,17 +1,17 @@
-# SBE Drift Guard (1-Day MVP)
+# SBE-like Schema Drift Guard
 
 ## Problem hypothesis
 
-In market-data systems, exchanges publish binary messages whose **schema changes frequently** (fields added/removed/reordered/type changes). Low-latency feed handlers—often in **C++**—must be updated quickly and safely. Manual updates are error-prone and create downtime risk.
+In market-data systems, exchanges publish binary messages whose **schema changes frequently** (fields added/removed/reordered/type changes). Low-latency feed handlers—often in **C++**—must be updated quickly and safely. Manual updates create downtime risk.
 
-**SBE Drift Guard** is a tiny prototype that simulates this reality:
+**SBE-like Schema Drift Guard** is a tiny automation of the generation of C++ feed handler code that simulates this reality:
 
 * You keep schemas in a simple JSON format (a stand-in for “real” SBE).
 * When a schema changes, the tool:
 
   1. **diffs** old vs new
   2. **generates** an updated C++ parser
-  3. **validates** the parser via automated tests
+  3. **validates** the parser via automated Python tests
   4. runs in **CI** to keep the pipeline green
 
 This focuses on the core automation idea: **schema drift → code generation → reproducible tests**.
@@ -155,7 +155,7 @@ Generates:
 
 ---
 
-## Demo script (what I would show in the interview)
+## Demo scripts
 
 1. Show `trade_v1.json` and `trade_v2.json` (simulate “exchange changed schema”)
 2. Run:
@@ -185,59 +185,3 @@ Generates:
 5. Mention CI: every PR regenerates and validates parsers automatically.
 
 > Note: VS Code IntelliSense uses c_cpp_properties.json to locate generated headers.
-
----
-
-## Success criteria
-
-The MVP is considered complete if:
-
-* Diff correctly identifies changes between v1 and v2 schemas
-* Generator produces valid C++ files that compile
-* Roundtrip test passes locally and in GitHub Actions
-* README explains how to run and demo in < 5 minutes
-
----
-
-## Why this maps to real feed-handling work
-
-Real exchange pipelines often involve:
-
-* A schema definition (SBE/FIX/ITCH variants)
-* Code generation steps
-* Regression testing and CI gates
-* Frequent schema changes
-
-This project shows the “automation muscle”: **take schema drift and turn it into safe, repeatable updates**.
-
----
-
-TODO: update this section
-## Out of scope (intentionally)
-
-* Full SBE XML parsing
-* Performance tuning / SIMD / lock-free queues
-* Multi-message catalogs
-* Docker / Kubernetes deployment
-
-This is a 1-day prototype focused on the core idea.
-
----
-
-## 1-day MVP checklist
-
-* [ ] Schema dataclasses + validation
-* [ ] Diff engine with added/removed/type/len/order
-* [ ] C++ code generator (struct + parse function)
-* [ ] Binary fixture writer (Python)
-* [ ] Roundtrip test that compiles and executes C++
-* [ ] GitHub Actions CI
-* [ ] Short README + demo steps
-
----
-
-If you want, next I can give you:
-
-* the **exact v1/v2 schema files** that create a nice diff,
-* the **minimal C++ codegen template** (safe + simple),
-* and a **GitHub Actions ci.yml** that works out of the box.
